@@ -156,15 +156,11 @@ class BPSMouseDataset(torch.utils.data.Dataset):
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
             im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
-        
-        
+
         # apply tranformation if available
-        image = None
+        image = im_data
         if self.transform:
             image = self.transform(im_data)
-        else:
-            toTensor = ToTensor()
-            image = toTensor(im_data)
 
         label = self.meta_df.iloc[idx]["particle_type"]
 
