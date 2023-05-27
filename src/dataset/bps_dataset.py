@@ -152,6 +152,7 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         if self.file_on_prem:
             im_data = cv2.imread(file_path, cv2.IMREAD_ANYDEPTH)
         else:
+            file_path = file_path.replace('\\', '/')
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
