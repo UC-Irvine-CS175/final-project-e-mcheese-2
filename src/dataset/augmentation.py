@@ -25,6 +25,7 @@ class NormalizeBPS(object):
             return img_array
         return img_array / normalized
 
+
 class ResizeBPS(object):
     def __init__(self, resize_height: int, resize_width:int):
         self.resize_height = resize_height
@@ -137,8 +138,12 @@ class ZoomBPS(object):
         
 class ApplyWatershed(object):
     """Apply watershed to images"""
-    def call(self, image: np.ndarray) -> Tuple:
+    def __call__(self, image: np.ndarray) -> Tuple:
         pass
+
+    def getAverage(self, image: np.ndarray) -> int:
+        return int(np.average(image))
+    
 
 
 def main():
@@ -155,4 +160,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
