@@ -156,7 +156,7 @@ class BPSMouseDataset(torch.utils.data.Dataset):
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
-            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
+            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_COLOR)
 
         # apply tranformation if available
         image = im_data
