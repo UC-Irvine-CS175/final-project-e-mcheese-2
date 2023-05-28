@@ -26,7 +26,7 @@ class NormalizeBPS(object):
         
         norm_array = img_array / normalized
         norm_array *= 256
-        norm_arr = norm_array.astype('uint8')
+        norm_array = norm_array.astype('uint8')
 
         return norm_array
 
