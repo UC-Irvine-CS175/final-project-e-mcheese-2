@@ -147,7 +147,15 @@ class ApplyWatershed(object):
         pass
 
     def getAverage(self, image: np.ndarray) -> int:
-        return int(np.average(image))
+        sum = 0
+        num_elements = 0
+        
+        for value in np.nditer(image):
+            if value > 0: 
+                sum += value
+                num_elements += 1
+
+        return int(sum / num_elements)
     
 
 

@@ -10,28 +10,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 from src.dataset.augmentation import NormalizeBPS, ApplyWatershed
 
-if __name__ == '__main__':
-    csv_file = 'meta.csv'
-    csv_dir = 'Microscopy/train'
-    bucket_name = 'nasa-bps-training-data'
-    s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))    
-
-    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, file_on_prem = False)
-    norm = NormalizeBPS()
-
-    my_watershed = ApplyWatershed()
-
+def test_watershed():
     for i in range(100):
-        data = dataset[48][0]
-        avg_intensity = my_watershed.getAverage(data)
+        data = dataset[i][0]
+        data_norm = norm(data)
+        avg_intensity = my_watershed.getAverage(data_norm)
+        cv2.imwrite(f'test_output\\{i}.png', data)
 
-        #dataNorm = norm(data)
-        temp = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
+        temp = cv2.cvtColor(data_norm, cv2.COLOR_BGR2GRAY)  
         
-        ret, thresh = cv2.threshold(temp,avg_intensity + i,255, cv2.THRESH_BINARY)
-        #cv2.imshow('i', thresh)
-        #cv2.waitKey(0)
-        cv2.imwrite(f'test_output\\threshold_{i}.png', thresh)
+        ret, thresh = cv2.threshold(temp,avg_intensity + 2,255, cv2.THRESH_BINARY)
+        cv2.imwrite(f'test_output\\{i}_avg.png', thresh)
 
 
         # # noise removal
@@ -61,4 +50,16 @@ if __name__ == '__main__':
         # markers = cv2.watershed(data,markers)
         # data[markers == -1] = [255,0,0]
 
-        # cv2.imwrite(f'fixed\\{i}_watershed.png', data)
+        # #cv2.imwrite(f'test_output\\{i}_watershed.png', data)
+
+if __name__ == '__main__':
+    csv_file = 'meta.csv'
+    csv_dir = 'Microscopy/train'
+    bucket_name = 'nasa-bps-training-data'
+    s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))    
+
+    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, file_on_prem = False)
+    norm = NormalizeBPS()
+    my_watershed = ApplyWatershed()
+
+    test_watershed()
