@@ -14,32 +14,33 @@ import os
 
 
 def generate_masks():
-        
-
-
     # GETTING THE MASKS AND SAVING
-    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = True, file_on_prem = False,transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256),]))
-    norm = NormalizeBPS()
+    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = True, file_on_prem = False, transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256)]))
     myWatershed = Watershed()
-    if not os.path.exists("data\\masks"):
-        os.makedirs("data\\masks")
+
+    mask_dir = ("data\\masks")
+    if not os.path.exists(mask_dir):
+        os.makedirs(mask_dir)
+
     for i in range(len(dataset)):
         data = dataset[i][0]
         mask = myWatershed.get_mask(data)
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
-        cv2.imwrite(f'data\\masks\\{i}.png', mask)
+        mask_path = os.path.join(mask_dir, i + '.png')
+        cv2.imwrite(mask_path, mask)
 
 def generate_images():
     # GETTING THE IMAGES AND SAVING
-    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = False, file_on_prem = False,transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256),]))
-    norm = NormalizeBPS()
-    myWatershed = Watershed()
-    if not os.path.exists("data\\images"):
-        os.makedirs("data\\images")
+    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = False, file_on_prem = False, transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256)]))
+
+    image_dir = ("data\\processed")
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
     for i in range(len(dataset)):
         data = dataset[i][0]
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
-        cv2.imwrite(f'data\\images\\{i}.png', data)
+        image_path = os.path.join(image_dir, i + '.png')
+        cv2.imwrite(image_path, data)
     
 
 if __name__ == "__main__":
