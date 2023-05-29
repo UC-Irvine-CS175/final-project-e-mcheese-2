@@ -22,7 +22,7 @@ def generate_masks():
     if not os.path.exists(mask_dir):
         os.makedirs(mask_dir)
 
-    for i in range(1332, len(dataset)):
+    for i in range(len(dataset)):
         data = dataset[i][0]
         mask = myWatershed.get_mask(data)
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
