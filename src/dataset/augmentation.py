@@ -135,10 +135,7 @@ class ZoomBPS(object):
         else:
             return img_resize
         
-class ApplyWatershed(object):
-    """Apply watershed to images"""
-    def call(self, image: np.ndarray) -> Tuple:
-        pass
+
 
 
 def main():
