@@ -5,9 +5,9 @@ import os
 # base path of the dataset
 DATASET_PATH = os.path.join("dataset", "train")
 
-# define the path to the images and masks dataset
-IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "images")
-MASK_DATASET_PATH = os.path.join(DATASET_PATH, "masks")
+# # define the path to the images and masks dataset
+# IMAGE_DATASET_PATH = os.path.join(DATASET_PATH, "images")
+# MASK_DATASET_PATH = os.path.join(DATASET_PATH, "masks")
 
 # define the test split
 TEST_SPLIT = 0.15
@@ -31,8 +31,8 @@ NUM_EPOCHS = 40
 BATCH_SIZE = 64
 
 # define the input image dimensions
-INPUT_IMAGE_WIDTH = 128
-INPUT_IMAGE_HEIGHT = 128
+INPUT_IMAGE_WIDTH = 256
+INPUT_IMAGE_HEIGHT = 256
 
 # define threshold to filter weak predictions
 THRESHOLD = 0.5
