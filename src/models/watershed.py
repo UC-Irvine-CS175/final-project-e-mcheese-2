@@ -39,7 +39,6 @@ class Watershed(object):
         markers = cv2.watershed(image,markers)
         image[markers == -1] = [255,0,0]
 
-        #cv2.imwrite(f'test_output\{i}_watershed.png', markers)
         return markers
 
     def getAverage(self, image: np.ndarray) -> int:

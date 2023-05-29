@@ -23,7 +23,12 @@ class NormalizeBPS(object):
         
         if normalized == 0:
             return img_array
-        return img_array / normalized
+        
+        norm_array = img_array / normalized
+        norm_array *= 256
+        norm_array = norm_array.astype('uint8')
+
+        return norm_array
 
 class ResizeBPS(object):
     def __init__(self, resize_height: int, resize_width:int):

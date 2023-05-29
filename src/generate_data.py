@@ -26,7 +26,7 @@ def generate_masks():
         data = dataset[i][0]
         mask = myWatershed.get_mask(data)
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
-        mask_path = os.path.join(mask_dir, i + '.png')
+        mask_path = os.path.join(mask_dir, str(i) + '.png')
         cv2.imwrite(mask_path, mask)
 
 def generate_images():
@@ -39,7 +39,7 @@ def generate_images():
     for i in range(len(dataset)):
         data = dataset[i][0]
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
-        image_path = os.path.join(image_dir, i + '.png')
+        image_path = os.path.join(image_dir, str(i) + '.png')
         cv2.imwrite(image_path, data)
     
 
@@ -48,5 +48,5 @@ if __name__ == "__main__":
     csv_dir = 'Microscopy/train'
     bucket_name = 'nasa-bps-training-data'
     s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-    generate_images()
+    #generate_images()
     generate_masks()
