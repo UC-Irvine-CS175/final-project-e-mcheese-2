@@ -79,8 +79,10 @@ class BPSMouseDataset(torch.utils.data.Dataset):
             s3_client: boto3.client = None,
             bucket_name: str = None,
             transform=None,
-            file_on_prem:bool = True):
+            file_on_prem:bool = True,
+            is_watershed = True):
         
+        self.is_watershed = is_watershed
         self.meta_root_dir = meta_root_dir
         self.s3_client = s3_client
         self.bucket_name = bucket_name
@@ -149,13 +151,17 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         # If on_prem is True load the image from local. 
         
         im_data = None
+        cv2_flag = cv2.IMREAD_ANYDEPTH
+        if self.is_watershed:
+            cv2_flag = cv2.IMREAD_COLOR
         if self.file_on_prem:
-            im_data = cv2.imread(file_path, cv2.IMREAD_ANYDEPTH)
+            im_data = cv2.imread(file_path, cv2_flag)
         else:
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
-            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
+            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
+
 
         # apply tranformation if available
         image = im_data
