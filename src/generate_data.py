@@ -15,25 +15,25 @@ import os
 
 def generate_masks():
     # GETTING THE MASKS AND SAVING
-    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = True, file_on_prem = False, transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256)]))
+    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = True, file_on_prem = False, transform=transforms.Compose([NormalizeBPS(), ResizeBPS(256, 256)]))
     myWatershed = Watershed()
 
     mask_dir = ("data\\masks")
     if not os.path.exists(mask_dir):
         os.makedirs(mask_dir)
 
-    for i in range(len(dataset)):
+    for i in range(1332, len(dataset)):
         data = dataset[i][0]
         mask = myWatershed.get_mask(data)
         ## BECAREFUL FOR FILE PATH WHEN TESTING BETWEEN WINDOWS AND UNIX BASED SYSTEMS
-        mask_path = os.path.join(mask_dir, str(i) + '.png')
-        cv2.imwrite(mask_path, mask)
+        mask_path = os.path.join(mask_dir, str(i) + '.txt')
+        np.savetxt(mask_path, mask)
 
 def generate_images():
     # GETTING THE IMAGES AND SAVING
-    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = False, file_on_prem = False, transform=transforms.Compose([NormalizeBPS(),ResizeBPS(256, 256)]))
+    dataset = bps_dataset.BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, is_watershed = False, file_on_prem = False)
 
-    image_dir = ("data\\processed")
+    image_dir = ("data\\raw")
     if not os.path.exists(image_dir):
         os.makedirs(image_dir)
     for i in range(len(dataset)):
