@@ -235,20 +235,20 @@ def main():
     pca, X_pca = perform_pca(X_flat=image_stream_1d, n_components=N_COMPONENTS)
     print(f'X_pca: {X_pca.shape}')
 
-    # Plot the 1d array of flattened images
-    plot_gallery_from_1D(title="Cell_Gallery_from_1D_Array",
-                     images=image_stream_1d[:N_COMPONENTS],
-                     n_row=N_ROWS,
-                     n_col=N_COLS,
-                     img_shape=IMAGE_SHAPE)
-    print(f'X_pca.shape: {X_pca.shape}')
+    # # Plot the 1d array of flattened images
+    # plot_gallery_from_1D(title="Cell_Gallery_from_1D_Array",
+    #                  images=image_stream_1d[:N_COMPONENTS],
+    #                  n_row=N_ROWS,
+    #                  n_col=N_COLS,
+    #                  img_shape=IMAGE_SHAPE)
+    # print(f'X_pca.shape: {X_pca.shape}')
 
-    # Plot the 1d array of flattened images after reducing the dimensionality using PCA
-    plot_gallery_from_1D(title="PCA_Cell_Gallery_from_1D_Array",
-                     images=pca.components_,
-                     n_row=N_ROWS,
-                     n_col=N_COLS,
-                     img_shape=IMAGE_SHAPE)
+    # # Plot the 1d array of flattened images after reducing the dimensionality using PCA
+    # plot_gallery_from_1D(title="PCA_Cell_Gallery_from_1D_Array",
+    #                  images=pca.components_,
+    #                  n_row=N_ROWS,
+    #                  n_col=N_COLS,
+    #                  img_shape=IMAGE_SHAPE)
 
     # Perform t-SNE on the flattened images before reducing the dimensionality using PCA
     X_tsne_direct = perform_tsne(X_reduced_dim=image_stream_1d, perplexity=30, n_components=2)
