@@ -251,10 +251,10 @@ def main():
     #                  img_shape=IMAGE_SHAPE)
 
     # Perform t-SNE on the flattened images before reducing the dimensionality using PCA
-    X_tsne_direct = perform_tsne(X_reduced_dim=image_stream_1d, perplexity=30, n_components=2)
+    X_tsne_direct = perform_tsne(X_reduced_dim=image_stream_1d, perplexity=30, n_components=3)
     print(f'X_tsne_direct.shape: {X_tsne_direct.shape}')
     # Perform t-SNE on the flattened images after reducing the dimensionality using PCA
-    X_tsne_pca = perform_tsne(X_reduced_dim=X_pca, perplexity=30, n_components=2)
+    X_tsne_pca = perform_tsne(X_reduced_dim=X_pca, perplexity=30, n_components=3)
     print(f'X_tsne_pca.shape: {X_tsne_pca.shape}')
     tsne_df_direct = create_tsne_cp_df(X_tsne_direct, all_labels, 1000)
     print(tsne_df_direct.head())
