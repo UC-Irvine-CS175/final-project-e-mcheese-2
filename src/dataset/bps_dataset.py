@@ -40,6 +40,7 @@ import sys
 sys.path.append(str(here()))
 
 from src.data_utils import get_bytesio_from_s3
+from src.models.watershed import Watershed
 
 
 """ 
@@ -79,13 +80,16 @@ class BPSMouseDataset(torch.utils.data.Dataset):
             s3_client: boto3.client = None,
             bucket_name: str = None,
             transform=None,
-            file_on_prem:bool = True):
+            file_on_prem:bool = True,
+            get_masks:bool = True):
         
         self.meta_root_dir = meta_root_dir
         self.s3_client = s3_client
         self.bucket_name = bucket_name
         self.transform = transform
         self.file_on_prem = file_on_prem
+        self.get_masks = get_masks
+        self.watershed = Watershed()
 
         # formulate the full path to metadata csv file
         # if the file is not on the local file system, use the get_bytesio_from_s3 function
@@ -110,7 +114,9 @@ class BPSMouseDataset(torch.utils.data.Dataset):
                 except ClientError as e:
                     raise ValueError("The file specified does not exist")
             else:
-                raise ValueError("S3 client and bucket name were not given")      
+                raise ValueError("S3 client and bucket name were not given") 
+
+        self.meta_df = pd.get_dummies(self.meta_df, columns=["particle_type"])     
             
 
     def __len__(self):
@@ -135,9 +141,21 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         """
 
         # get the bps image file name from the metadata dataframe at the given index
-        file_name = self.meta_df.iloc[idx]["filename"]
+        row = self.meta_df.iloc[idx]
+        file_name = row["filename"]
 
-        # formulate path to image given the root directory (note meta.csv is in the
+
+        # Fetch one hot encoded labels for all classes of particle_type as a Series
+        particle_type_tensor = row[['particle_type_Fe', 'particle_type_X-ray']]
+        # Convert Series to numpy array
+        particle_type_tensor = particle_type_tensor.to_numpy().astype(np.bool_)
+        
+        # Convert One Hot Encoded labels to tensor
+        particle_type_tensor = torch.from_numpy(particle_type_tensor)
+        # Convert tensor data type to Float
+        particle_type_tensor = particle_type_tensor.type(torch.FloatTensor)
+
+        # formulate path to image/mask given the root directory (note meta.csv is in the
         # same directory as the images)
         file_path = os.path.join(self.meta_root_dir, file_name)
         file_path = os.path.normpath(file_path)
@@ -149,23 +167,36 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         # If on_prem is True load the image from local. 
         
         im_data = None
+        cv2_flag = cv2.IMREAD_ANYDEPTH
+
+        if self.get_masks:
+            cv2_flag =cv2.IMREAD_COLOR
+
         if self.file_on_prem:
-            im_data = cv2.imread(file_path, cv2.IMREAD_ANYDEPTH)
+            if self.get_masks:
+                file_path = file_path[:-4] + '.txt'
+                mask = np.loadtxt(file_path)
+                return mask, particle_type_tensor
+            
+            im_data = cv2.imread(file_path, cv2_flag)
         else:
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
-            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
+            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
 
         # apply tranformation if available
         image = im_data
         if self.transform:
             image = self.transform(im_data)
 
-        label = self.meta_df.iloc[idx]["particle_type"]
-
-        # return the image and associated label
-        return image, label
+        # return the image and one hot encoded tensor
+        if not self.get_masks:
+            return image, particle_type_tensor
+        
+        # return the mask and one hot encoded tensor
+        mask = self.watershed.get_mask(image)
+        return mask, particle_type_tensor
 
 
 def show_label_batch(image: torch.Tensor, label: str):
