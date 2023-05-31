@@ -55,7 +55,8 @@ class BPSDataModule(pl.LightningDataModule):
                  meta_root_dir: str = None,
                  s3_client: boto3.client = None,
                  s3_path: str = None,
-                 bucket_name: str = None):
+                 bucket_name: str = None,
+                 get_masks: bool = False):
         """
         PyTorch Lightning DataModule for the BPS microscopy data.
 
@@ -98,6 +99,7 @@ class BPSDataModule(pl.LightningDataModule):
         self.on_prem = file_on_prem
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.get_masks = get_masks
     
     def prepare_data(self) -> None:
         """
@@ -137,16 +139,16 @@ class BPSDataModule(pl.LightningDataModule):
         """
         if stage == "train":
             # Create the BPSMouseDataset object for the training data.
-            self.train_object =  BPSMouseDataset(self.train_csv,self.train_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem)
+            self.train_object =  BPSMouseDataset(self.train_csv,self.train_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem, get_masks = self.get_masks)
 
         if stage == "validate":
             # Create the BPSMouseDataset object for the validation data.
-            self.val_object =  BPSMouseDataset(self.val_csv,self.val_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem)
+            self.val_object =  BPSMouseDataset(self.val_csv,self.val_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem, get_masks = self.get_masks)
 
             
         if stage == "test":
             # Create the BPSMouseDataset object for the test data.
-            self.test_object =  BPSMouseDataset(self.test_csv,self.test_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem)
+            self.test_object =  BPSMouseDataset(self.test_csv,self.test_dir, self.s3_client,self.bucket_name,self.transform,self.on_prem, get_masks = self.get_masks)
 
         
 

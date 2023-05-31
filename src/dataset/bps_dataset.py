@@ -81,7 +81,7 @@ class BPSMouseDataset(torch.utils.data.Dataset):
             bucket_name: str = None,
             transform=None,
             file_on_prem:bool = True,
-            get_masks:bool = True):
+            get_masks:bool = False):
         
         self.meta_root_dir = meta_root_dir
         self.s3_client = s3_client
