@@ -25,6 +25,7 @@ from src.dataset.bps_datamodule import BPSDataModule
 from src.vis_utils import(
     plot_gallery_from_1D,
     plot_2D_scatter_plot,
+    plot_3D_scatter_plot
 )
 
 def preprocess_images(lt_datamodule: DataLoader) -> (np.ndarray, list):
@@ -262,8 +263,8 @@ def main():
     tsne_df_pca = create_tsne_cp_df(X_tsne_pca, all_labels, 1000)
     print(tsne_df_pca.head())
     print(f'tsne_df_pca.shape: {tsne_df_pca.shape}')
-    plot_2D_scatter_plot(tsne_df_direct, 'tsne_direct_4hr_Gy_hi')
-    plot_2D_scatter_plot(tsne_df_pca, 'tsne_pca_4hr_Gy_hi')
+    plot_3D_scatter_plot(tsne_df_direct, 'tsne_direct_4hr_Gy_hi')
+    plot_3D_scatter_plot(tsne_df_pca, 'tsne_pca_4hr_Gy_hi')
 
 if __name__ == "__main__":
     main()
