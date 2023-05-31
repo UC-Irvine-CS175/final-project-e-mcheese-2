@@ -24,6 +24,23 @@ class NormalizeBPS(object):
         if normalized == 0:
             return img_array
         return img_array / normalized
+    
+class NormalizeWatershed(object):
+    def __call__(self, img_array) -> np.array(np.float32):
+        """
+        Normalize the array values between 0 - 1
+        """
+
+        normalized = np.linalg.norm(img_array)
+        
+        if normalized == 0:
+            return img_array
+        
+        norm_array = img_array / normalized
+        norm_array *= 256
+        norm_array = norm_array.astype('uint8')
+
+        return norm_array
 
 class ResizeBPS(object):
     def __init__(self, resize_height: int, resize_width:int):
