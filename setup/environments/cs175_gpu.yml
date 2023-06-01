@@ -26,3 +26,6 @@ dependencies:
     - pyprojroot
     - scikit-learn
     - opencv-python
+    - seaborn
+    - albumentations
+    - pydicom
