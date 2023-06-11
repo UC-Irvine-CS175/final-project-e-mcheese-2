@@ -81,7 +81,7 @@ class Encoder(nn.Module):
         )
     def forward(self, x):
         #return self.l1(x)
-        x1 = self.pool(F.relu(self.bn1(self.conv1(x.float()))))
+        x1 = self.pool(F.relu(self.bn1(self.conv1(x))))
         x2 = self.pool(F.relu(self.bn2(self.conv2(x1))))
         x3 = self.pool(F.relu(self.bn3(self.conv3(x2))))
         x4 = self.pool(F.relu(self.bn4(self.conv4(x3))))
@@ -265,7 +265,7 @@ def main():
                            bucket_name=bucket_name,
                            s3_path=s3_path,
                            convertToFloat = True,
-                           num_workers=12
+                           num_workers=1
                            )
     # Setup train and validate dataloaders
     bps_dm.setup(stage='train')
@@ -275,14 +275,23 @@ def main():
 
     # model
     # add encoder arguments!!!!
-    autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
+    #autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
-    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
+    #trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
+    #trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
 
     #autoencoder = LitAutoEncoder(Encoder(), Decoder())
     #optimizer = autoencoder.configure_optimizers()
+    validate = bps_dm.val_dataloader()
+    model = LitAutoEncoder.load_from_checkpoint(r"lightning_logs\\version_22\\checkpoints\\epoch=9-step=17730.ckpt")
+    import matplotlib.pyplot as plt
+    for x, _ in validate:
+        x = x.cuda()
+        y_hat = model(x)
+
+        plt.imshow(y_hat.cpu().data[0, :, :, :].permute(1, 2, 0))
+        plt.show()
 
 
 if __name__ == "__main__":
