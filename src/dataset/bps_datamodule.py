@@ -163,7 +163,7 @@ class BPSDataModule(pl.LightningDataModule):
         """
         Returns the validation dataloader.
         """
-        return DataLoader(self.val_object, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(self.val_object, batch_size=self.batch_size, shuffle=False)
     
     def test_dataloader(self) -> EVAL_DATALOADERS:
         """
