@@ -260,21 +260,24 @@ def main():
                            resize_dims=(256, 256),
                            meta_csv_file = s3_meta_fname,
                            meta_root_dir=s3_path,
-                           s3_client= s3_client,
+                           s3_client= None,
                            bucket_name=bucket_name,
                            s3_path=s3_path,
-                           convertToFloat = True
+                           convertToFloat = True,
+                           num_workers=12
                            )
     # Setup train and validate dataloaders
     bps_dm.setup(stage='train')
     bps_dm.setup(stage='validate')
+
+    #torch.multiprocessing.set_start_method('spawn')
 
     # model
     # add encoder arguments!!!!
     autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    trainer = pl.Trainer(accelerator = "cpu", devices = 1, max_epochs=100)
+    trainer = pl.Trainer(accelerator = "cpu", devices = 1, max_epochs=10)
     trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
 
     #autoencoder = LitAutoEncoder(Encoder(), Decoder())
