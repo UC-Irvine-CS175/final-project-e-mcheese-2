@@ -13,6 +13,7 @@ from typing import Any, Tuple
 import torchvision
 import random
 
+
 class NormalizeBPS(object):
     def __call__(self, img_array) -> np.array(np.float32):
         """
@@ -68,6 +69,7 @@ class VFlipBPS(object):
         """
         
         return np.array(list(reversed(image)))
+
 
 
 class HFlipBPS(object):
@@ -131,6 +133,12 @@ class ToTensor(object):
 
         torch_img = np.expand_dims(image, axis = 0)
         return torch.from_numpy(torch_img.copy())
+class tensorToFloat(object):
+    def __call__(self, imageTensor) -> np.ndarray:
+        """
+        Convert tensor to float
+        """
+        return imageTensor.float()
     
 class ZoomBPS(object):
     def __init__(self, zoom: float=1) -> None:

@@ -22,6 +22,7 @@ sys.path.append(str(root))
 from src.dataset.bps_dataset import BPSMouseDataset 
 from src.dataset.bps_datamodule import BPSDataModule
 
+
 class Encoder(nn.Module):
     def __init__(self,
         latent_dim,
@@ -252,7 +253,6 @@ def main():
     train_dir = data_dir / 'processed'
     validation_csv_file = 'meta_dose_hi_hr_4_post_exposure_test.csv'
     validation_dir = data_dir / 'processed'
-
     bps_dm = BPSDataModule(train_csv_file=train_csv_file,
                            train_dir=train_dir,
                            val_csv_file=validation_csv_file,
@@ -263,6 +263,7 @@ def main():
                            s3_client= s3_client,
                            bucket_name=bucket_name,
                            s3_path=s3_path,
+                           convertToFloat = True
                            )
     # Setup train and validate dataloaders
     bps_dm.setup(stage='train')
