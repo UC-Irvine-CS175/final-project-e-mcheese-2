@@ -189,6 +189,7 @@ class Decoder(nn.Module):
 class LitAutoEncoder(pl.LightningModule):
     def __init__(self, encoder, decoder):
         super().__init__()
+        self.save_hyperparameters()
         self.encoder = encoder
         self.decoder = decoder
         self.loss_function = torch.nn.MSELoss(reduction='none')
@@ -277,7 +278,7 @@ def main():
     autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    trainer = pl.Trainer(accelerator = "cpu", devices = 1, max_epochs=10)
+    trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
     trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
 
     #autoencoder = LitAutoEncoder(Encoder(), Decoder())
