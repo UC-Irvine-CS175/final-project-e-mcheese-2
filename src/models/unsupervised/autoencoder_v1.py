@@ -80,7 +80,7 @@ class Encoder(nn.Module):
         )
     def forward(self, x):
         #return self.l1(x)
-        x1 = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x1 = self.pool(F.relu(self.bn1(self.conv1(x.float()))))
         x2 = self.pool(F.relu(self.bn2(self.conv2(x1))))
         x3 = self.pool(F.relu(self.bn3(self.conv3(x2))))
         x4 = self.pool(F.relu(self.bn4(self.conv4(x3))))
@@ -264,19 +264,20 @@ def main():
                            bucket_name=bucket_name,
                            s3_path=s3_path,
                            )
+    # Setup train and validate dataloaders
     bps_dm.setup(stage='train')
-    #train_loader = DataLoader(dataset)
+    bps_dm.setup(stage='validate')
 
     # model
     # add encoder arguments!!!!
     autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    trainer = pl.Trainer()
-    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader())
+    trainer = pl.Trainer(accelerator = "cpu", devices = 1, max_epochs=100)
+    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
 
-    autoencoder = LitAutoEncoder(Encoder(), Decoder())
-    optimizer = autoencoder.configure_optimizers()
+    #autoencoder = LitAutoEncoder(Encoder(), Decoder())
+    #optimizer = autoencoder.configure_optimizers()
 
 
 if __name__ == "__main__":
