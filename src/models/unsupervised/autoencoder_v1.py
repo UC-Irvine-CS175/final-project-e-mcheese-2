@@ -35,6 +35,15 @@ class Encoder(nn.Module):
         ks=3,):
         super().__init__()
         pad = int((ks - 1) / 2)
+
+        self.conv1 = nn.Conv2d(
+            in_channels=num_channels,
+            out_channels=filter_1,
+            kernel_size=(ks, ks),
+            stride=(1, 1),
+            padding=(pad, pad),
+        )
+
         #self.l1 = nn.Sequential(nn.Linear(28 * 28, 64), nn.ReLU(), nn.Linear(64, 3))
         self.bn1 = nn.BatchNorm2d(filter_1, track_running_stats=False)
         
@@ -260,7 +269,7 @@ def main():
 
     # model
     # add encoder arguments!!!!
-    autoencoder = LitAutoEncoder(Encoder(256,256), Decoder(256,256))
+    autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
     trainer = pl.Trainer()
