@@ -37,12 +37,13 @@ def initial_download():
     s3_meta_csv_path = f'{s3_path}/meta.csv'
     s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
 
+    # Make the output directory if it does not exist
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
-
     if not os.path.exists(processed_dir):
         os.makedirs(processed_dir)
     
+    # Download the overall csv file from AWS
     file_path = os.path.join(processed_dir, "meta.csv")
     file_path = os.path.normpath(file_path)
     if not os.path.isfile(file_path):
@@ -52,6 +53,7 @@ def initial_download():
             s3_file_path=s3_meta_csv_path,
             local_file_path=processed_dir)
     
+    # Save all the tiff files from the dataset
     save_tiffs_local_from_s3(
         s3_client=s3_client,
         bucket_name=bucket_name,
@@ -59,6 +61,7 @@ def initial_download():
         local_fnames_meta_path=file_path,
         save_file_path=processed_dir)
     
+    # Create and save train/test split csv files
     train_test_split_subset_meta_dose_hr(
         subset_meta_dose_hr_csv_path=file_path,
         test_size=0.2,
@@ -81,20 +84,22 @@ def generate_watershed(csv_dir = None, csv_file = None, file_on_prem: bool = Tru
     if not file_on_prem: 
         s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
 
-    dataset = BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, \
+    dataset = BPSMouseDataset(csv_file, csv_dir, s3_client, bucket_name, 
                               transform = transforms.Compose([ResizeBPS(256, 256)]), 
                               file_on_prem = file_on_prem, get_masks = True)
     
     if save_local and not os.path.exists(save_local):
         os.makedirs(save_local)
 
+    # Iterate over each mask in the given subset
     for mask, file_name in dataset:
         if not save_local:
+            # Only show the file if no output path is given
             plt.imshow(mask)
             plt.show()
         else:
+            # Save each file to the output directory with its corresponding name
             save_path = os.path.join(save_local, file_name[:-4] + '.png')
-            print(save_path)
             plt.imsave(save_path, mask)
 
 
@@ -121,16 +126,21 @@ def generate_autoencoder_output(model_weights = None, csv_dir = None, csv_file =
     if save_local and not os.path.exists(save_local):
         os.makedirs(save_local)
 
+    # Load the model weights
     model = LitAutoEncoder.load_from_checkpoint(model_weights)
     for (x, _, file_name) in validate:    
         image = x.cuda()
-        y_hat = model(image)
 
+        # Get the autoencoder output
+        y_hat = model(image)
         output = np.array(y_hat.cpu().data[0, :, :, :].permute(1, 2, 0))
+
         if not save_local:
+            # Only show the file if no output path is given
             plt.imshow(output)
             plt.show()
         else:
+            # Save each file to the output directory with its corresponding name
             output_path = os.path.join(save_local, file_name[0])
             cv2.imwrite(output_path, output)
 
@@ -192,25 +202,30 @@ def plot_all_images(process_dir = None, watershed_dir = None, autoencoder_dir = 
     training_bps = BPSMouseDataset(csv_file, process_dir, transform=transforms.Compose([ResizeBPS(256, 256)]), file_on_prem=True)
     for i in training_bps:
         image, _, file_name = i
-        print(image)
 
         watershed_path = os.path.join(watershed_dir, file_name)
         auto_path = os.path.join(autoencoder_dir, file_name)
 
-        figure, axis = plt.subplots(1, 3)
+        _, axis = plt.subplots(1, 3)
 
         axis[0].imshow(image)
         axis[0].set_title('Original Image')
 
-        axis[1].imshow(cv2.imread(watershed_path, cv2.IMREAD_ANYDEPTH))
-        axis[1].set_title('Watershed Masks')
+        # Only show the watershed image if it exists
+        if os.path.isfile(watershed_path):
+            axis[1].imshow(cv2.imread(watershed_path, cv2.IMREAD_ANYDEPTH))
+            axis[1].set_title('Watershed Mask')
         
-        axis[2].imshow(cv2.imread(auto_path, cv2.IMREAD_ANYDEPTH))
-        axis[2].set_title('Autoencoder 32')
+        # Only show the autoencoder output if it exists
+        if os.path.isfile(auto_path):
+            axis[2].imshow(cv2.imread(auto_path, cv2.IMREAD_ANYDEPTH))
+            axis[2].set_title('Autoencoder Output')
         plt.show()
 
 
 def main():
+    # MAKE SURE TO ADD COMPLETE PATH WHEN SPECIFYING AN INPUT/OUTPUT DIRECTORY
+
     initial_download()
 
     generate_watershed(csv_dir = r'C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\processed', 

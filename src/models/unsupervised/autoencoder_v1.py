@@ -300,30 +300,14 @@ def main():
     bps_dm.setup(stage='train')
     bps_dm.setup(stage='validate')
 
-    #torch.multiprocessing.set_start_method('spawn')
-
     # model
     # add encoder arguments!!!!
-    #autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
+    autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    #trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
-    #trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
-
-    #autoencoder = LitAutoEncoder(Encoder(), Decoder())
-    #optimizer = autoencoder.configure_optimizers()
-    validate = bps_dm.train_dataloader()
-    model = LitAutoEncoder.load_from_checkpoint(r"lightning_logs\\version_2\\checkpoints\\epoch=99-step=1543600.ckpt")
-    import matplotlib.pyplot as plt
-    import cv2
-    for (x, _, file_name) in validate:
-        length = len(x)
-        for i in range(length):
-            x = x.cuda()
-            y_hat = model(x)
-            plt.imshow('a', np.array(y_hat.cpu().data[i, :, :, :].permute(1, 2, 0)))
-
-            cv2.imwrite(f'Autoencoder_Masks_64/{file_name[i]}', np.array(y_hat.cpu().data[i, :, :, :].permute(1, 2, 0)))
+    trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
+    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
+    
 
 
 if __name__ == "__main__":
