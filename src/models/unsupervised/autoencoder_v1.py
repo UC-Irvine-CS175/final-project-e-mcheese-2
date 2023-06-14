@@ -235,12 +235,13 @@ class LitAutoEncoder(pl.LightningModule):
     
     
 
-def train_autoencoder(csv_dir = None, train_file = None, val_file = None, num_workers = None):
+def train_autoencoder(csv_dir = None, train_file = None, val_file = None, num_workers = 1):
     '''This functions trains an unsupervised autoencoder model
     This assumes that all files to be trained/validated are stored locally
     csv_dir: The directory that contains both the train and val csv files
     train_file: The name of the train csv file contained in csv_dir
-    val_file: The name of the val csv file contained in csv_dir'''
+    val_file: The name of the val csv file contained in csv_dir
+    num_workers: Specifies how many workers you want for the dataloader'''
 
     if not csv_dir or not train_file or not val_file:
         return
