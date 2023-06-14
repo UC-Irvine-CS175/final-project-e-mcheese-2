@@ -273,38 +273,7 @@ def main():
             break
 
 if __name__ == "__main__":
-    #main()
-    train_csv_path = 'meta_dose_hi_hr_4_post_exposure_train.csv'
-    training_bps = BPSMouseDataset(train_csv_path, './data/processed', transform=None, file_on_prem=True)
-    resize = ResizeBPS(256, 256)
-    for i in training_bps:
-        _, _, file_name = i
-        original = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\processed"
-        watershed = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Watershed_Masks"
-        auto_32 = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Autoencoder_Masks"
-        auto_64 = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Autoencoder_Masks_64"
-
-        original_path = os.path.join(original, file_name)
-        watershed_path = os.path.join(watershed, file_name[:-4] + '.txt')
-        auto_32_path = os.path.join(auto_32, file_name)
-        auto_64_path = os.path.join(auto_64, file_name)
-
-        #figure, axis = plt.subplots(2, 2)
-        orr = cv2.imread(original_path, cv2.IMREAD_ANYDEPTH)
-        plt.imshow(orr)
-
-        #axis[0, 0].imshow(resize(orr))
-        #axis[0, 0].set_title('Original Image')
-
-        #axis[0, 1].imshow(np.loadtxt(watershed_path))
-        #axis[0, 1].set_title('Watershed Masks')
-        
-        #axis[1, 0].imshow(cv2.imread(auto_32_path, cv2.IMREAD_ANYDEPTH))
-        #axis[1, 0].set_title('Autoencoder 32')
-
-        #axis[1, 1].imshow(cv2.imread(auto_64_path, cv2.IMREAD_ANYDEPTH))
-        #axis[1, 1].set_title('Autoencoder 64')
-        plt.show()
+    main()
 
 #The PyTorch Dataset class is an abstract class that is used to provide an interface for accessing all the samples
 # in your dataset. It inherits from the PyTorch torch.utils.data.Dataset class and overrides two methods:
