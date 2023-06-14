@@ -50,4 +50,6 @@ class Watershed(object):
                 sum += value
                 num_elements += 1
 
+        if num_elements == 0:
+            return 0
         return int(sum / num_elements)
