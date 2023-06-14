@@ -2,15 +2,15 @@
 This module contains the BPSMouseDataset class which is a subclass of torch.utils.data.Dataset.
 """
 
-from src.dataset.augmentation import (
-    NormalizeBPS,
-    ResizeBPS,
-    VFlipBPS,
-    HFlipBPS,
-    RotateBPS,
-    RandomCropBPS,
-    ToTensor
-)
+# from src.dataset.augmentation import (
+#     NormalizeBPS,
+#     ResizeBPS,
+#     VFlipBPS,
+#     HFlipBPS,
+#     RotateBPS,
+#     RandomCropBPS,
+#     ToTensor
+# )
 
 import os
 import torch
@@ -41,6 +41,7 @@ sys.path.append(str(here()))
 
 from src.data_utils import get_bytesio_from_s3
 from src.models.watershed import Watershed
+from src.dataset.augmentation import ResizeBPS, NormalizeWatershed
 
 
 """ 
@@ -166,37 +167,41 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         # with datatype unsigned 16 bit integer used to represent microscopy images.
         # If on_prem is True load the image from local. 
         
-        im_data = None
+        image = None
+        original = None
         cv2_flag = cv2.IMREAD_ANYDEPTH
 
         if self.get_masks:
             cv2_flag =cv2.IMREAD_COLOR
 
-        if self.file_on_prem:
-            if self.get_masks:
-                file_path = file_path[:-4] + '.txt'
-                mask = np.loadtxt(file_path)
-                return mask, particle_type_tensor
-            
-            im_data = cv2.imread(file_path, cv2_flag)
+        if self.file_on_prem:           
+            image = cv2.imread(file_path, cv2_flag)
+            original = cv2.imread(file_path, cv2.IMREAD_ANYDEPTH)
         else:
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
-            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
+            image = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
+
+            im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
+            im_bytes = np.asarray(bytearray(im_bytesio.read()))
+            original = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
 
         # apply tranformation if available
-        image = im_data
         if self.transform:
-            image = self.transform(im_data)
+            if self.get_masks:
+                normalize = NormalizeWatershed()
+                image = normalize(image)
+            image = self.transform(image)
+            original = self.transform(original)
 
         # return the image and one hot encoded tensor
         if not self.get_masks:
-            return image, particle_type_tensor
+            return image, particle_type_tensor, file_name
         
         # return the mask and one hot encoded tensor
-        mask = self.watershed.get_mask(image)
-        return mask, particle_type_tensor
+        mask = self.watershed.get_mask(image, original)
+        return mask, file_name
 
 
 def show_label_batch(image: torch.Tensor, label: str):
@@ -268,7 +273,39 @@ def main():
             break
 
 if __name__ == "__main__":
-    main()
+    #main()
+    train_csv_path = 'meta_dose_hi_hr_4_post_exposure_train.csv'
+    training_bps = BPSMouseDataset(train_csv_path, './data/processed', transform=None, file_on_prem=True)
+    resize = ResizeBPS(256, 256)
+    for i in training_bps:
+        _, _, file_name = i
+        original = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\processed"
+        watershed = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Watershed_Masks"
+        auto_32 = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Autoencoder_Masks"
+        auto_64 = r"C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\Autoencoder_Masks_64"
+
+        original_path = os.path.join(original, file_name)
+        watershed_path = os.path.join(watershed, file_name[:-4] + '.txt')
+        auto_32_path = os.path.join(auto_32, file_name)
+        auto_64_path = os.path.join(auto_64, file_name)
+
+        #figure, axis = plt.subplots(2, 2)
+        orr = cv2.imread(original_path, cv2.IMREAD_ANYDEPTH)
+        plt.imshow(orr)
+
+        #axis[0, 0].imshow(resize(orr))
+        #axis[0, 0].set_title('Original Image')
+
+        #axis[0, 1].imshow(np.loadtxt(watershed_path))
+        #axis[0, 1].set_title('Watershed Masks')
+        
+        #axis[1, 0].imshow(cv2.imread(auto_32_path, cv2.IMREAD_ANYDEPTH))
+        #axis[1, 0].set_title('Autoencoder 32')
+
+        #axis[1, 1].imshow(cv2.imread(auto_64_path, cv2.IMREAD_ANYDEPTH))
+        #axis[1, 1].set_title('Autoencoder 64')
+        plt.show()
+
 #The PyTorch Dataset class is an abstract class that is used to provide an interface for accessing all the samples
 # in your dataset. It inherits from the PyTorch torch.utils.data.Dataset class and overrides two methods:
 # __len__ and __getitem__. The __len__ method returns the number of samples in the dataset and the __getitem__
