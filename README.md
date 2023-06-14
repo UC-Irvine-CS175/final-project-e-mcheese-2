@@ -19,7 +19,23 @@ __bool file_on_prem__: If true will pull source images from local disk. If false
 __string save_local__: Default is none, which will not save the images but instead will show temporary matplot images. If given a string, it should be the directory where the images will be saved to.  
 ______________________________________________________
 ## VERIFYING WATERSHED
+To produce plots of foci counts and estimated Poisson distributions, run the main() function of src/poisson_distributions.py.
+In order to run this main, the following steps must be completed:
 
+Use prepare_subset_data() to create CSV files for each subset.
+Parameters:  
+__string meta_csv_path__: The path to the meta csv file containing the entire dataset.
+__string subset_csv_dir__: The path to the directory where the user wants to save the subset csv files.
+
+Use pickle_masks() on each subset CSV to create an array of masks for each image in the CSV and save that array as a pickle file locally.
+Parameters:  
+__string local_csv_path__: The path to the subset csv file.
+__string local_data_dir__: The path to the directory where raw images are stored.
+__string local_masks_path__: The path to where the user wants the mask pickle to be saved.
+__Watershed watershed__: The path to the directory where the user wants to save the subset csv files.
+__torchvision.transform transform__: Transformation to apply to images before masking. Default None.
+
+In the poisson_distributions.py main(), change the directory passed to visualize_subset() to the local mask directory (whatever was passed as subset_csv_dir to prepare_subset_data()).
 
 
 ____________________________________________________
