@@ -235,6 +235,7 @@ class LitAutoEncoder(pl.LightningModule):
     
     
 
+
 def train_autoencoder(csv_dir = None, train_file = None, val_file = None, num_workers = 1):
     '''This functions trains an unsupervised autoencoder model
     This assumes that all files to be trained/validated are stored locally
@@ -268,6 +269,7 @@ def train_autoencoder(csv_dir = None, train_file = None, val_file = None, num_wo
 
 
 
+
 def main():
     bucket_name = "nasa-bps-training-data"
     s3_path = "Microscopy/train"
@@ -284,6 +286,7 @@ def main():
     train_dir = data_dir / 'processed'
     validation_csv_file = 'meta_dose_hi_hr_4_post_exposure_test.csv'
     validation_dir = data_dir / 'processed'
+
     bps_dm = BPSDataModule(train_csv_file=train_csv_file,
                            train_dir=train_dir,
                            val_csv_file=validation_csv_file,
@@ -309,6 +312,7 @@ def main():
     trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
     trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
     
+
 
 
 if __name__ == "__main__":
