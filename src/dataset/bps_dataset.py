@@ -2,15 +2,15 @@
 This module contains the BPSMouseDataset class which is a subclass of torch.utils.data.Dataset.
 """
 
-# from src.dataset.augmentation import (
-#     NormalizeBPS,
-#     ResizeBPS,
-#     VFlipBPS,
-#     HFlipBPS,
-#     RotateBPS,
-#     RandomCropBPS,
-#     ToTensor
-# )
+from src.dataset.augmentation import (
+    NormalizeBPS,
+    ResizeBPS,
+    VFlipBPS,
+    HFlipBPS,
+    RotateBPS,
+    RandomCropBPS,
+    ToTensor
+)
 
 import os
 import torch
