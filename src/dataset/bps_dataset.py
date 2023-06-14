@@ -41,6 +41,7 @@ sys.path.append(str(here()))
 
 from src.data_utils import get_bytesio_from_s3
 from src.models.watershed import Watershed
+from src.dataset.augmentation import ResizeBPS, NormalizeWatershed
 
 
 """ 
@@ -166,37 +167,41 @@ class BPSMouseDataset(torch.utils.data.Dataset):
         # with datatype unsigned 16 bit integer used to represent microscopy images.
         # If on_prem is True load the image from local. 
         
-        im_data = None
+        image = None
+        original = None
         cv2_flag = cv2.IMREAD_ANYDEPTH
 
         if self.get_masks:
             cv2_flag =cv2.IMREAD_COLOR
 
-        if self.file_on_prem:
-            if self.get_masks:
-                file_path = file_path[:-4] + '.txt'
-                mask = np.loadtxt(file_path)
-                return mask, particle_type_tensor
-            
-            im_data = cv2.imread(file_path, cv2_flag)
+        if self.file_on_prem:           
+            image = cv2.imread(file_path, cv2_flag)
+            original = cv2.imread(file_path, cv2.IMREAD_ANYDEPTH)
         else:
             im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
 
             im_bytes = np.asarray(bytearray(im_bytesio.read()))
-            im_data = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
+            image = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2_flag)
+
+            im_bytesio = get_bytesio_from_s3(self.s3_client, self.bucket_name, file_path)
+            im_bytes = np.asarray(bytearray(im_bytesio.read()))
+            original = cv2.imdecode(np.frombuffer(im_bytes, dtype = np.uint8), cv2.IMREAD_ANYDEPTH)
 
         # apply tranformation if available
-        image = im_data
         if self.transform:
-            image = self.transform(im_data)
+            if self.get_masks:
+                normalize = NormalizeWatershed()
+                image = normalize(image)
+            image = self.transform(image)
+            original = self.transform(original)
 
         # return the image and one hot encoded tensor
         if not self.get_masks:
-            return image, particle_type_tensor
+            return image, particle_type_tensor, file_name
         
         # return the mask and one hot encoded tensor
-        mask = self.watershed.get_mask(image)
-        return mask, particle_type_tensor
+        mask = self.watershed.get_mask(image, original)
+        return mask, file_name
 
 
 def show_label_batch(image: torch.Tensor, label: str):
@@ -269,6 +274,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 #The PyTorch Dataset class is an abstract class that is used to provide an interface for accessing all the samples
 # in your dataset. It inherits from the PyTorch torch.utils.data.Dataset class and overrides two methods:
 # __len__ and __getitem__. The __len__ method returns the number of samples in the dataset and the __getitem__

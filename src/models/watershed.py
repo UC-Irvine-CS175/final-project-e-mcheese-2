@@ -6,7 +6,7 @@ import torchvision
 import random
 
 class Watershed(object):
-    def get_mask(self, image: np.ndarray):
+    def get_mask(self, image: np.ndarray, original):
         """Apply watershed to images"""
         avg_intensity = self.getAverage(image)
 
@@ -37,10 +37,9 @@ class Watershed(object):
         markers[unknown==255] = 0
 
         markers = cv2.watershed(image,markers)
-        image[markers == -1] = [255,0,0]
+        original[markers == -1] = [1]
 
-        #cv2.imwrite(f'test_output\{i}_watershed.png', markers)
-        return markers
+        return original
 
     def getAverage(self, image: np.ndarray) -> int:
         sum = 0
@@ -51,4 +50,6 @@ class Watershed(object):
                 sum += value
                 num_elements += 1
 
+        if num_elements == 0:
+            return 0
         return int(sum / num_elements)
