@@ -1,0 +1,8 @@
+# Ignore all .png output
+*.png
+
+# Ignore everything in data directory
+data/
+
+# Ignore all raw data
+*.tif
