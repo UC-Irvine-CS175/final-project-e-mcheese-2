@@ -62,7 +62,7 @@ __string csv_dir__: The directory that contains the target csv file. This has to
 __string csv_file__: The name of the csv file contained in csv_dir with the target images.  
 __string save_local__: Default is none, which will not save the images but instead will show temporary matplot images. If given a string, it should be the directory where the images will be saved to.  
 
-
+**NOTE: There are pretrained model weights in the directory named Model_Weights**
 
 
 
