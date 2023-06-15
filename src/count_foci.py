@@ -1,4 +1,3 @@
-
 import numpy as np
 import cv2
 
@@ -12,7 +11,12 @@ import matplotlib.pyplot as plt
 def num_foci(mask: np.ndarray):
     return np.unique(mask).shape[0] - 2
 
+def foci_counts(masks):
+    return [num_foci(mask) for mask in masks]
+
 def main():
+    # test visualization
+    # requires masks to be saved as text files in the directory data/masks
     fnames = [
         "P242_73665006707-A6_009_007_proj",
         "P244_73665165741-C7_027_003_proj",

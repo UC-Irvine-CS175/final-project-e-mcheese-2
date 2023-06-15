@@ -53,7 +53,7 @@ def preprocess_images(lt_datamodule: DataLoader) -> (np.ndarray, list):
 
 
     # Loop over each batch of images and labels by by enumerating over the train_loader
-    for batch, (img, label) in enumerate(lt_datamodule()):
+    for batch, (img, label, _) in enumerate(lt_datamodule()):
         # Set batch size to the number of images in the batch
         bs = len(img)
 
@@ -216,7 +216,7 @@ def main():
                                    train_dir=data_dir,
                                    val_csv_file=val_meta_fname,
                                    val_dir=data_dir,
-                                   resize_dims=(64, 64),
+                                   resize_dims=(256, 256),
                                    batch_size=batch_size,
                                    num_workers=num_workers)
 
@@ -252,10 +252,10 @@ def main():
     #                  img_shape=IMAGE_SHAPE)
 
     # Perform t-SNE on the flattened images before reducing the dimensionality using PCA
-    X_tsne_direct = perform_tsne(X_reduced_dim=image_stream_1d, perplexity=30, n_components=3)
+    X_tsne_direct = perform_tsne(X_reduced_dim=image_stream_1d, perplexity=30, n_components=2)
     print(f'X_tsne_direct.shape: {X_tsne_direct.shape}')
     # Perform t-SNE on the flattened images after reducing the dimensionality using PCA
-    X_tsne_pca = perform_tsne(X_reduced_dim=X_pca, perplexity=30, n_components=3)
+    X_tsne_pca = perform_tsne(X_reduced_dim=X_pca, perplexity=30, n_components=2)
     print(f'X_tsne_pca.shape: {X_tsne_pca.shape}')
     tsne_df_direct = create_tsne_cp_df(X_tsne_direct, all_labels, 1000)
     print(tsne_df_direct.head())
@@ -263,8 +263,8 @@ def main():
     tsne_df_pca = create_tsne_cp_df(X_tsne_pca, all_labels, 1000)
     print(tsne_df_pca.head())
     print(f'tsne_df_pca.shape: {tsne_df_pca.shape}')
-    plot_3D_scatter_plot(tsne_df_direct, 'tsne_direct_4hr_Gy_hi')
-    plot_3D_scatter_plot(tsne_df_pca, 'tsne_pca_4hr_Gy_hi')
+    plot_2D_scatter_plot(tsne_df_direct, 'tsne_direct_4hr_Gy_hi')
+    plot_2D_scatter_plot(tsne_df_pca, 'tsne_pca_4hr_Gy_hi')
 
 if __name__ == "__main__":
     main()

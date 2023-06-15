@@ -34,7 +34,8 @@ from src.dataset.bps_dataset import BPSMouseDataset
 from src.dataset.augmentation import (
     NormalizeBPS,
     ResizeBPS,
-    ToTensor
+    ToTensor,
+    tensorToFloat
 )
 
 # To define the PyTorch Lightning DataModule, we need to define a class that inherits from the
@@ -56,7 +57,8 @@ class BPSDataModule(pl.LightningDataModule):
                  s3_client: boto3.client = None,
                  s3_path: str = None,
                  bucket_name: str = None,
-                 get_masks: bool = False):
+                 get_masks: bool = False,
+                 convertToFloat = False):
         """
         PyTorch Lightning DataModule for the BPS microscopy data.
 
@@ -91,11 +93,19 @@ class BPSDataModule(pl.LightningDataModule):
         self.meta_csv = meta_csv_file
         self.meta_dir = meta_root_dir
         self.resize_dims = resize_dims
-        self.transform = transforms.Compose([
-                            NormalizeBPS(),
-                            ResizeBPS(resize_dims[0], resize_dims[1]),
-                            ToTensor()
-                ])
+        if not convertToFloat:
+            self.transform = transforms.Compose([
+                                NormalizeBPS(),
+                                ResizeBPS(resize_dims[0], resize_dims[1]),
+                                ToTensor()
+                    ])
+        else:
+            self.transform = transforms.Compose([
+                                NormalizeBPS(),
+                                ResizeBPS(resize_dims[0], resize_dims[1]),
+                                ToTensor(),
+                                tensorToFloat()
+                    ])
         self.on_prem = file_on_prem
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -157,13 +167,13 @@ class BPSDataModule(pl.LightningDataModule):
         """
         Returns the training dataloader.
         """
-        return DataLoader(self.train_object, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(self.train_object, batch_size=self.batch_size, shuffle=True, num_workers = self.num_workers)
     
     def val_dataloader(self) -> EVAL_DATALOADERS:
         """
         Returns the validation dataloader.
         """
-        return DataLoader(self.val_object, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(self.val_object, batch_size=self.batch_size, shuffle=False, num_workers = self.num_workers)
     
     def test_dataloader(self) -> EVAL_DATALOADERS:
         """

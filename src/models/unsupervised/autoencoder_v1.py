@@ -22,6 +22,7 @@ sys.path.append(str(root))
 from src.dataset.bps_dataset import BPSMouseDataset 
 from src.dataset.bps_datamodule import BPSDataModule
 
+
 class Encoder(nn.Module):
     def __init__(self,
         latent_dim,
@@ -35,6 +36,15 @@ class Encoder(nn.Module):
         ks=3,):
         super().__init__()
         pad = int((ks - 1) / 2)
+
+        self.conv1 = nn.Conv2d(
+            in_channels=num_channels,
+            out_channels=filter_1,
+            kernel_size=(ks, ks),
+            stride=(1, 1),
+            padding=(pad, pad),
+        )
+
         #self.l1 = nn.Sequential(nn.Linear(28 * 28, 64), nn.ReLU(), nn.Linear(64, 3))
         self.bn1 = nn.BatchNorm2d(filter_1, track_running_stats=False)
         
@@ -179,6 +189,7 @@ class Decoder(nn.Module):
 class LitAutoEncoder(pl.LightningModule):
     def __init__(self, encoder, decoder):
         super().__init__()
+        self.save_hyperparameters()
         self.encoder = encoder
         self.decoder = decoder
         self.loss_function = torch.nn.MSELoss(reduction='none')
@@ -225,6 +236,38 @@ class LitAutoEncoder(pl.LightningModule):
     
 
 
+def train_autoencoder(csv_dir = None, train_file = None, val_file = None, num_workers = 1):
+    '''This functions trains an unsupervised autoencoder model
+    This assumes that all files to be trained/validated are stored locally
+    csv_dir: The directory that contains both the train and val csv files
+    train_file: The name of the train csv file contained in csv_dir
+    val_file: The name of the val csv file contained in csv_dir
+    num_workers: Specifies how many workers you want for the dataloader'''
+
+    if not csv_dir or not train_file or not val_file:
+        return
+
+    bps_dm = BPSDataModule(train_csv_file=train_file,
+                           train_dir=csv_dir,
+                           val_csv_file=val_file,
+                           val_dir=csv_dir,
+                           resize_dims=(256, 256),
+                           convertToFloat = True,
+                           num_workers=num_workers
+                           )
+    
+     # Setup train and validate dataloaders
+    bps_dm.setup(stage='train')
+    bps_dm.setup(stage='validate')
+
+    # Setup the model
+    autoencoder = LitAutoEncoder(Encoder(64, 1, 256, 256), Decoder(64, 1, 256, 256))
+
+    # Train the model
+    trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
+    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
+
+
 
 
 def main():
@@ -251,23 +294,25 @@ def main():
                            resize_dims=(256, 256),
                            meta_csv_file = s3_meta_fname,
                            meta_root_dir=s3_path,
-                           s3_client= s3_client,
+                           s3_client= None,
                            bucket_name=bucket_name,
                            s3_path=s3_path,
+                           convertToFloat = True,
+                           num_workers=1
                            )
+    # Setup train and validate dataloaders
     bps_dm.setup(stage='train')
-    #train_loader = DataLoader(dataset)
+    bps_dm.setup(stage='validate')
 
     # model
     # add encoder arguments!!!!
-    autoencoder = LitAutoEncoder(Encoder(256,256), Decoder(256,256))
+    autoencoder = LitAutoEncoder(Encoder(32, 1, 256, 256), Decoder(32, 1, 256, 256))
 
     # train model
-    trainer = pl.Trainer()
-    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader())
+    trainer = pl.Trainer(accelerator = "gpu", devices = 1, max_epochs=10)
+    trainer.fit(model=autoencoder, train_dataloaders=bps_dm.train_dataloader(), val_dataloaders=bps_dm.val_dataloader())
+    
 
-    autoencoder = LitAutoEncoder(Encoder(), Decoder())
-    optimizer = autoencoder.configure_optimizers()
 
 
 if __name__ == "__main__":
