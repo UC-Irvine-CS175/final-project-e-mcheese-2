@@ -94,6 +94,9 @@ __string save_local__: Default is none, which will not save the images but inste
 **NOTE: All of the directory parameters must include the full path to each respective directory.**  
 
 
+____________________________________________________
+## Tips on Saving Output Images
+**Make sure to save all raw, Watershed, and Autoencoder Outputs into separate directories**  
 
 
 
