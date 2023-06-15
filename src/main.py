@@ -191,14 +191,18 @@ def generate_tsne_plots(csv_dir = None, csv_file = None, file_name = None):
     plot_2D_scatter_plot(tsne_df_pca, file_name)
 
 
-def plot_all_images(process_dir = None, watershed_dir = None, autoencoder_dir = None, csv_file = None):
+def plot_all_images(process_dir = None, watershed_dir = None, autoencoder_dir = None, csv_file = None, save_local = None):
     '''This function plots all the raw, watershed, and autoencoder images in one image.
     The process_dir should have the csv_file of interest. 
     This assumes all other directories have all of the respective images of the csv saved.
     process_dir: Holds the raw images and the csv_file (This should be done by initial_download())
     watershed_dir: Holds all the watershed images (This should be done by generate_watershed())
-    autoencoder_dir: Holds all the autoencoder output images (This should be done by generate_autoencoder_output())'''
+    autoencoder_dir: Holds all the autoencoder output images (This should be done by generate_autoencoder_output())
+    save_local: Output directory to save watershed masks to, None to not save anything'''
 
+    if save_local and not os.path.exists(save_local):
+        os.makedirs(save_local)
+    
     training_bps = BPSMouseDataset(csv_file, process_dir, transform=transforms.Compose([ResizeBPS(256, 256)]), file_on_prem=True)
     for i in training_bps:
         image, _, file_name = i
@@ -220,7 +224,12 @@ def plot_all_images(process_dir = None, watershed_dir = None, autoencoder_dir = 
         if os.path.isfile(auto_path):
             axis[2].imshow(cv2.imread(auto_path, cv2.IMREAD_ANYDEPTH))
             axis[2].set_title('Autoencoder Output')
-        plt.show()
+        
+        if not save_local:
+            plt.show()
+        else:
+            file_path = os.path.join(save_local, f'{file_name[:-4]}.png')
+            plt.savefig(file_path)
 
 
 def main():
@@ -246,7 +255,8 @@ def main():
     plot_all_images(process_dir = r'C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\processed',
                     watershed_dir = r'C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\watershed', 
                     autoencoder_dir = r'C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\autoencoder', 
-                    csv_file = 'meta_dose_hi_hr_4_post_exposure_train.csv')
+                    csv_file = 'meta_dose_hi_hr_4_post_exposure_train.csv',
+                    save_local = r'C:\Users\Jarrod\Documents\UCI\Spring_2023\CS_175\Main_Repo\final-project-e-mcheese-2\data\all_images' )
 
 if __name__ == '__main__':
 
